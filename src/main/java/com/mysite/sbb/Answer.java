@@ -11,13 +11,16 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 public class Answer {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    @Column(columnDefinition = "TEXT")
+    @Id // PRIMARY KEY
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // AUTO_INCREMENT
+    private Integer id; // INT id
+
+    @Column(columnDefinition = "TEXT") // TEXT
     private String content;
-    @CreatedDate
-    private LocalDateTime createDate;
+
+    private LocalDateTime createDate; // DATETIME
+
     @ManyToOne
     private Question question;
+    // `public class Answer` @ManyToOne `private Question question`
 }
