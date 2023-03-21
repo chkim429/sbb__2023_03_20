@@ -1,10 +1,15 @@
 package com.mysite.sbb;
 
+import com.mysite.sbb.answer.Answer;
+import com.mysite.sbb.answer.AnswerRepository;
+import com.mysite.sbb.question.Question;
+import com.mysite.sbb.question.QuestionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SbbApplicationTests {
     @Autowired
     private QuestionRepository questionRepository;
+
+    @Autowired
+    private AnswerRepository answerRepository;
 
     @BeforeEach
         // 아래 메서드는 각 테스트케이스가 실행되기 전에 실행된다.
@@ -40,6 +48,19 @@ class SbbApplicationTests {
         q2.setContent("id는 자동으로 생성되나요?");
         q2.setCreateDate(LocalDateTime.now());
         questionRepository.save(q2);  // 두번째 질문 저장
+
+        Answer a1 = new Answer();
+        a1.setContent("네 자동으로 생성됩니다.");
+        q2.addAnswer(a1);
+        a1.setCreateDate(LocalDateTime.now());
+        answerRepository.save(a1);
+
+
+        // 모든 데이터 삭제
+        answerRepository.deleteAll();
+
+        // 흔적삭제(다음번 INSERT 때 id가 1번으로 설정되도록)
+        answerRepository.clearAutoIncrement();
     }
 
     @Test
@@ -170,4 +191,32 @@ class SbbApplicationTests {
         questionRepository.delete(q);
         assertEquals(1, questionRepository.count());
     }
+
+    @Test
+    @DisplayName("답변 데이터 생성후 저장하기")
+    void t009() {
+        Question q = questionRepository.findById(2).orElse(null);
+
+        Answer a = new Answer();
+        a.setContent("네 자동으로 생성됩니다.");
+        a.setQuestion(q);
+        a.setCreateDate(LocalDateTime.now());
+        answerRepository.save(a);
+    }
+
+    @Transactional
+    @Test
+    @DisplayName("질문에 달린 답변 찾기")
+    void t011() {
+        Optional<Question> oq = questionRepository.findById(2);
+        assertTrue(oq.isPresent());
+        Question q = oq.get();
+
+        List<Answer> answerList = q.getAnswerList();
+
+        assertEquals(1, answerList.size());
+        assertEquals("네 자동으로 생성됩니다.", answerList.get(0).getContent());
+    }
+
+
 }
